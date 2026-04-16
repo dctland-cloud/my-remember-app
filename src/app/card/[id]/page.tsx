@@ -4,7 +4,7 @@
  * - 원터치 전화/이메일 연결 버튼
  * - 편집 모드로 전환하여 정보 수정 가능
  * - 삭제 기능 (확인 대화상자 포함)
- * - 인사 이메일 발송 버튼 (Phase 4에서 구현)
+ * - 인사 이메일 발송 (EmailJS를 통해 미리보기 후 발송)
  */
 
 "use client";
@@ -14,6 +14,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getCard, updateCard, deleteCard } from "@/lib/cards";
 import type { CardData } from "@/types/card";
+import GreetingEmailDialog from "@/components/GreetingEmailDialog";
 
 export default function CardDetailPage() {
   const { user, loading: authLoading } = useAuth();
@@ -27,6 +28,7 @@ export default function CardDetailPage() {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
   // 편집용 폼 상태
@@ -351,14 +353,35 @@ export default function CardDetailPage() {
             )}
           </div>
 
-          {/* 인사 이메일 발송 버튼 (Phase 4에서 구현) */}
+          {/* 인사 이메일 발송 버튼 */}
           {card.email && !card.greetingEmailSent && (
             <button
-              onClick={() => showSuccess("인사 이메일 기능은 곧 추가됩니다")}
+              onClick={() => setShowEmailDialog(true)}
               className="w-full py-3 bg-surface text-primary font-medium border border-primary/30 rounded-xl hover:bg-primary/5 active:scale-[0.98] transition-all text-sm"
             >
               인사 이메일 보내기
             </button>
+          )}
+
+          {/* 인사 이메일 대화상자 */}
+          {showEmailDialog && card && (
+            <GreetingEmailDialog
+              card={card}
+              onClose={() => setShowEmailDialog(false)}
+              onSent={async () => {
+                setShowEmailDialog(false);
+                // Firestore에 발송 완료 기록
+                if (card.id) {
+                  try {
+                    await updateCard(card.id, { greetingEmailSent: true });
+                    setCard({ ...card, greetingEmailSent: true });
+                  } catch (err) {
+                    console.error("발송 상태 업데이트 실패:", err);
+                  }
+                }
+                showSuccess("인사 이메일이 발송되었습니다");
+              }}
+            />
           )}
 
           {/* 상세 정보 */}

@@ -15,6 +15,7 @@ import { compressForApi, generateThumbnail } from "@/lib/image-utils";
 import { saveCard, updateCard, checkDuplicate } from "@/lib/cards";
 import CameraCapture from "@/components/CameraCapture";
 import DuplicateDialog from "@/components/DuplicateDialog";
+import GreetingEmailDialog from "@/components/GreetingEmailDialog";
 import type { DuplicateChoice } from "@/components/DuplicateDialog";
 import type { OcrResult, CardData } from "@/types/card";
 
@@ -35,6 +36,11 @@ export default function ScanPage() {
 
   // 중복 체크 관련 상태
   const [duplicateCard, setDuplicateCard] = useState<CardData | null>(null);
+
+  // 저장 후 이메일 발송 제안 관련 상태
+  const [showEmailPrompt, setShowEmailPrompt] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [savedCardForEmail, setSavedCardForEmail] = useState<CardData | null>(null);
 
   // 폼 데이터
   const [name, setName] = useState("");
@@ -171,9 +177,16 @@ export default function ScanPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    await saveCard(cardData);
+    const savedId = await saveCard(cardData);
     setSaving(false);
-    showSuccessAndNavigate("명함이 저장되었습니다");
+
+    // 이메일이 있으면 인사 이메일 발송 제안
+    if (email.trim()) {
+      setSavedCardForEmail({ ...cardData, id: savedId });
+      setShowEmailPrompt(true);
+    } else {
+      showSuccessAndNavigate("명함이 저장되었습니다");
+    }
   };
 
   /** 중복 대화상자에서 사용자 선택 처리 */
@@ -243,6 +256,86 @@ export default function ScanPage() {
         <DuplicateDialog
           existingCard={duplicateCard}
           onChoice={handleDuplicateChoice}
+        />
+      )}
+
+      {/* 저장 후 인사 이메일 발송 제안 */}
+      {showEmailPrompt && savedCardForEmail && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-xs p-6">
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-6 h-6 text-green-600"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-text text-center mb-2">
+              명함이 저장되었습니다
+            </h3>
+            <p className="text-sm text-text-secondary text-center mb-6">
+              {savedCardForEmail.name}님에게
+              <br />
+              인사 이메일을 보내시겠습니까?
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setShowEmailPrompt(false);
+                  setSavedCardForEmail(null);
+                  showSuccessAndNavigate("명함이 저장되었습니다");
+                }}
+                className="flex-1 py-2.5 text-text-secondary font-medium border border-border rounded-xl hover:bg-border/30 transition-colors"
+              >
+                나중에
+              </button>
+              <button
+                onClick={() => {
+                  setShowEmailPrompt(false);
+                  setShowEmailDialog(true);
+                }}
+                className="flex-1 py-2.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all"
+              >
+                보내기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 인사 이메일 발송 대화상자 */}
+      {showEmailDialog && savedCardForEmail && (
+        <GreetingEmailDialog
+          card={savedCardForEmail}
+          onClose={() => {
+            setShowEmailDialog(false);
+            setSavedCardForEmail(null);
+            showSuccessAndNavigate("명함이 저장되었습니다");
+          }}
+          onSent={async () => {
+            setShowEmailDialog(false);
+            // Firestore에 발송 완료 기록
+            if (savedCardForEmail.id) {
+              try {
+                await updateCard(savedCardForEmail.id, {
+                  greetingEmailSent: true,
+                });
+              } catch (err) {
+                console.error("발송 상태 업데이트 실패:", err);
+              }
+            }
+            setSavedCardForEmail(null);
+            showSuccessAndNavigate("인사 이메일이 발송되었습니다");
+          }}
         />
       )}
 
