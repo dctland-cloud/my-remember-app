@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
     ),
   },
   {
-    href: "/profile",
+    href: "/mycard",
     label: "내 명함",
     icon: (
       <svg

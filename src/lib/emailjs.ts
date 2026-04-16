@@ -97,6 +97,7 @@ export interface MyProfile {
   title: string;
   email: string;
   phone: string;
+  slug?: string;
 }
 
 const PROFILE_STORAGE_KEY = "my-remember-profile";

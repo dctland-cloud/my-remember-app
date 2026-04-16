@@ -44,6 +44,9 @@ export default function GreetingEmailDialog({
   const [myEmail, setMyEmail] = useState("");
   const [myPhone, setMyPhone] = useState("");
 
+  // slug 상태 (디지털 명함 공개 링크용)
+  const [mySlug, setMySlug] = useState("");
+
   // 컴포넌트 마운트 시 프로필 불러오기
   useEffect(() => {
     const profile = getMyProfile();
@@ -53,6 +56,7 @@ export default function GreetingEmailDialog({
       setMyTitle(profile.title);
       setMyEmail(profile.email);
       setMyPhone(profile.phone);
+      if (profile.slug) setMySlug(profile.slug);
       setStep("preview");
     } else {
       // 프로필이 없으면 입력부터
@@ -98,7 +102,9 @@ export default function GreetingEmailDialog({
       fromTitle: myTitle,
       fromEmail: myEmail,
       fromPhone: myPhone,
-      digitalCardUrl: `${window.location.origin}/card/public/${encodeURIComponent(myName)}`,
+      digitalCardUrl: mySlug
+        ? `${window.location.origin}/p/${mySlug}`
+        : `${window.location.origin}/mycard`,
     };
 
     const success = await sendGreetingEmail(params);
