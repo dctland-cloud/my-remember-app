@@ -246,7 +246,7 @@ export default function ScanPage() {
     <div className="px-4 pt-8 pb-4 max-w-lg mx-auto">
       {/* 성공 메시지 토스트 */}
       {successMsg && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white text-sm font-medium px-5 py-2.5 rounded-full shadow-lg animate-toast">
           {successMsg}
         </div>
       )}
@@ -261,8 +261,8 @@ export default function ScanPage() {
 
       {/* 저장 후 인사 이메일 발송 제안 */}
       {showEmailPrompt && savedCardForEmail && (
-        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-xs p-6">
+        <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 modal-overlay">
+          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-xs p-6 animate-scale-in">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <svg

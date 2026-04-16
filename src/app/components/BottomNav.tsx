@@ -102,7 +102,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-lg border-t border-border/80 z-50">
       <div className="max-w-lg mx-auto flex justify-around items-center h-16">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -110,14 +110,20 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-0.5 py-2 px-3 rounded-lg transition-colors ${
+              className={`relative flex flex-col items-center justify-center gap-0.5 py-2 px-4 rounded-xl transition-all duration-200 ${
                 isActive
                   ? "text-nav-active"
-                  : "text-nav-inactive hover:text-text-secondary"
+                  : "text-nav-inactive hover:text-text-secondary active:scale-95"
               }`}
             >
-              {item.icon}
-              <span className="text-xs font-medium">{item.label}</span>
+              {/* 활성 탭 배경 하이라이트 */}
+              {isActive && (
+                <span className="absolute inset-0 bg-primary/8 rounded-xl animate-scale-in" />
+              )}
+              <span className="relative">{item.icon}</span>
+              <span className={`relative text-xs ${isActive ? "font-semibold" : "font-medium"}`}>
+                {item.label}
+              </span>
             </Link>
           );
         })}

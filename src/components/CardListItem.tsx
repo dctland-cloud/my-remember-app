@@ -19,7 +19,7 @@ export default function CardListItem({ card }: CardListItemProps) {
   return (
     <Link
       href={`/card/${card.id}`}
-      className="flex items-center gap-3 bg-surface rounded-xl border border-border p-3 hover:shadow-sm active:scale-[0.99] transition-all"
+      className="flex items-center gap-3 bg-surface rounded-xl border border-border p-3 card-hover active:scale-[0.99]"
     >
       {/* 썸네일 또는 이니셜 */}
       <div className="flex-shrink-0">

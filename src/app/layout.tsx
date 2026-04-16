@@ -12,7 +12,16 @@ import BottomNav from "@/app/components/BottomNav";
 
 export const metadata: Metadata = {
   title: "나만의 리멤버",
-  description: "명함을 촬영하고 관리하는 나만의 리멤버 앱",
+  description: "명함을 촬영하면 AI가 자동으로 정보를 저장하는 앱",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "나만의 리멤버",
+  },
+  other: {
+    "apple-touch-icon": "/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -20,6 +29,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
@@ -29,6 +39,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
       <body className="min-h-screen bg-background">
         <AuthProvider>
           {/* 메인 콘텐츠 영역 - 하단 네비게이션 높이만큼 패딩 */}

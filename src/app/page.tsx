@@ -15,7 +15,7 @@ import CardListItem from "@/components/CardListItem";
 import type { CardData } from "@/types/card";
 
 export default function Home() {
-  const { user, loading, signIn, signOut } = useAuth();
+  const { user, loading, signIn } = useAuth();
 
   // 명함 목록 관련 상태
   const [cards, setCards] = useState<CardData[]>([]);
@@ -79,8 +79,12 @@ export default function Home() {
   // 로딩 중일 때 스켈레톤 UI
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-text-secondary">로딩 중...</div>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-3">
+        <div className="relative w-10 h-10">
+          <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+          <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+        </div>
+        <div className="text-sm text-text-secondary">로딩 중...</div>
       </div>
     );
   }
@@ -179,12 +183,12 @@ export default function Home() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 bg-surface rounded-xl border border-border p-3 animate-pulse"
+                  className="flex items-center gap-3 bg-surface rounded-xl border border-border p-3"
                 >
-                  <div className="w-14 h-14 rounded-lg bg-border" />
+                  <div className="w-14 h-14 rounded-lg skeleton-shimmer" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-border rounded w-24" />
-                    <div className="h-3 bg-border rounded w-32" />
+                    <div className="h-4 skeleton-shimmer rounded w-24" />
+                    <div className="h-3 skeleton-shimmer rounded w-32" />
                   </div>
                 </div>
               ))}
@@ -192,8 +196,14 @@ export default function Home() {
           ) : filteredCards.length > 0 ? (
             // 명함 목록
             <div className="space-y-2">
-              {filteredCards.map((card) => (
-                <CardListItem key={card.id} card={card} />
+              {filteredCards.map((card, index) => (
+                <div
+                  key={card.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 40}ms`, animationFillMode: "backwards" }}
+                >
+                  <CardListItem card={card} />
+                </div>
               ))}
             </div>
           ) : cards.length > 0 ? (
@@ -240,17 +250,12 @@ export default function Home() {
             </div>
           )}
 
-          {/* 로그아웃 버튼 */}
-          <button
-            onClick={signOut}
-            className="w-full mt-8 py-3 text-sm text-text-secondary border border-border rounded-xl hover:bg-border/30 transition-colors"
-          >
-            로그아웃
-          </button>
+          {/* 하단 여백 (로그아웃은 설정에서) */}
+          <div className="h-4" />
         </div>
       ) : (
         /* ───── 비로그인 상태 ───── */
-        <div className="max-w-sm mx-auto text-center">
+        <div className="max-w-sm mx-auto text-center animate-fade-in-up">
           {/* 앱 아이콘 */}
           <div className="mb-8">
             <svg

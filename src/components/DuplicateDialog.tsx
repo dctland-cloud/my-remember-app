@@ -21,9 +21,9 @@ export default function DuplicateDialog({
 }: DuplicateDialogProps) {
   return (
     // 반투명 배경 오버레이
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 modal-overlay">
       {/* 대화상자 본체 */}
-      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-scale-in">
         {/* 헤더 */}
         <div className="px-6 pt-6 pb-4">
           <h3 className="text-lg font-bold text-text text-center">

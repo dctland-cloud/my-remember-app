@@ -122,7 +122,7 @@ export default function GreetingEmailDialog({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-[100] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 bg-black/40 z-[100] flex items-end sm:items-center justify-center modal-overlay">
       <div className="bg-surface rounded-t-2xl sm:rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slide-up">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
