@@ -3,7 +3,7 @@
  * - 1단계: 카메라 촬영 또는 갤러리에서 명함 이미지 선택
  * - 2단계: 이미지를 압축 후 Gemini AI에 보내 명함 정보 자동 추출
  * - 3단계: AI가 읽어낸 결과를 폼에 채워 보여주고 사용자가 확인/수정
- * - 4단계: 저장 (현재는 console.log, Phase 3에서 Firestore 연결 예정)
+ * - 4단계: 중복 체크 후 Firestore에 저장
  */
 
 "use client";
@@ -12,8 +12,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { compressForApi, generateThumbnail } from "@/lib/image-utils";
+import { saveCard, updateCard, checkDuplicate } from "@/lib/cards";
 import CameraCapture from "@/components/CameraCapture";
-import type { OcrResult } from "@/types/card";
+import DuplicateDialog from "@/components/DuplicateDialog";
+import type { DuplicateChoice } from "@/components/DuplicateDialog";
+import type { OcrResult, CardData } from "@/types/card";
 
 /** 페이지 진행 단계 */
 type Step = "capture" | "analyzing" | "edit";
@@ -28,6 +31,10 @@ export default function ScanPage() {
   const [thumbnailBase64, setThumbnailBase64] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // 중복 체크 관련 상태
+  const [duplicateCard, setDuplicateCard] = useState<CardData | null>(null);
 
   // 폼 데이터
   const [name, setName] = useState("");
@@ -109,10 +116,45 @@ export default function ScanPage() {
     }
   };
 
-  /** 저장 버튼 클릭 (Phase 3에서 Firestore 연결 예정) */
+  /** 성공 메시지를 잠깐 보여주고 홈으로 이동 */
+  const showSuccessAndNavigate = (msg: string) => {
+    setSuccessMsg(msg);
+    setTimeout(() => {
+      router.push("/");
+    }, 1200);
+  };
+
+  /** 저장 버튼 클릭 — 중복 체크 후 Firestore에 저장 */
   const handleSave = async () => {
     setSaving(true);
 
+    try {
+      // 먼저 중복 체크
+      const existing = await checkDuplicate(user!.uid, {
+        email,
+        phone,
+        name,
+        company,
+      });
+
+      if (existing) {
+        // 중복 발견 — 대화상자 표시
+        setDuplicateCard(existing);
+        setSaving(false);
+        return;
+      }
+
+      // 중복 없음 — 바로 저장
+      await performSave();
+    } catch (err) {
+      console.error("저장 실패:", err);
+      alert("저장에 실패했습니다. 다시 시도해주세요.");
+      setSaving(false);
+    }
+  };
+
+  /** 실제 Firestore 저장 실행 */
+  const performSave = async () => {
     const cardData = {
       userId: user!.uid,
       name,
@@ -129,13 +171,46 @@ export default function ScanPage() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Phase 3에서 Firestore 저장으로 교체 예정
-    console.log("저장할 명함 데이터:", cardData);
-    alert("명함이 저장되었습니다! (콘솔에서 데이터 확인 가능)");
-
+    await saveCard(cardData);
     setSaving(false);
-    // 초기화하고 촬영 화면으로 돌아감
-    resetForm();
+    showSuccessAndNavigate("명함이 저장되었습니다");
+  };
+
+  /** 중복 대화상자에서 사용자 선택 처리 */
+  const handleDuplicateChoice = async (choice: DuplicateChoice) => {
+    setDuplicateCard(null);
+
+    if (choice === "cancel") {
+      // 취소 — 편집 폼으로 돌아감
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (choice === "update" && duplicateCard?.id) {
+        // 기존 명함 업데이트
+        await updateCard(duplicateCard.id, {
+          name,
+          company,
+          title,
+          email,
+          phone,
+          address,
+          memo,
+          metAt,
+          thumbnailBase64,
+        });
+        setSaving(false);
+        showSuccessAndNavigate("명함이 업데이트되었습니다");
+      } else {
+        // 새로 저장
+        await performSave();
+      }
+    } catch (err) {
+      console.error("저장 실패:", err);
+      alert("저장에 실패했습니다. 다시 시도해주세요.");
+      setSaving(false);
+    }
   };
 
   /** 폼 초기화 */
@@ -156,6 +231,21 @@ export default function ScanPage() {
 
   return (
     <div className="px-4 pt-8 pb-4 max-w-lg mx-auto">
+      {/* 성공 메시지 토스트 */}
+      {successMsg && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-600 text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
+          {successMsg}
+        </div>
+      )}
+
+      {/* 중복 명함 발견 대화상자 */}
+      {duplicateCard && (
+        <DuplicateDialog
+          existingCard={duplicateCard}
+          onChoice={handleDuplicateChoice}
+        />
+      )}
+
       {/* 페이지 제목 */}
       <h1 className="text-xl font-bold text-text mb-6 text-center">
         명함 스캔
