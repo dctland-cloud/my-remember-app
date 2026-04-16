@@ -38,5 +38,9 @@ export function getFirebaseDb(): Firestore | null {
   return getFirestore(app);
 }
 
-// Google 로그인 제공자 설정
-export const googleProvider = new GoogleAuthProvider();
+// Google 로그인 제공자 (지연 초기화)
+let _googleProvider: GoogleAuthProvider | null = null;
+export function getGoogleProvider(): GoogleAuthProvider {
+  if (!_googleProvider) _googleProvider = new GoogleAuthProvider();
+  return _googleProvider;
+}

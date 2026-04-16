@@ -19,7 +19,7 @@ import {
   signOut as firebaseSignOut,
   User,
 } from "firebase/auth";
-import { getFirebaseAuth, googleProvider } from "@/lib/firebase";
+import { getFirebaseAuth, getGoogleProvider } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
-      await signInWithPopup(auth, googleProvider);
+      await signInWithPopup(auth, getGoogleProvider());
     } catch (error) {
       console.error("로그인 실패:", error);
     }
