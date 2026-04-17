@@ -15,6 +15,7 @@ import {
   saveMyProfile,
   type GreetingEmailParams,
 } from "@/lib/emailjs";
+import { useAuth } from "@/lib/auth";
 import type { CardData } from "@/types/card";
 
 interface GreetingEmailDialogProps {
@@ -34,6 +35,7 @@ export default function GreetingEmailDialog({
   onClose,
   onSent,
 }: GreetingEmailDialogProps) {
+  const { user } = useAuth();
   const [step, setStep] = useState<DialogStep>("preview");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -47,7 +49,7 @@ export default function GreetingEmailDialog({
   // slug 상태 (디지털 명함 공개 링크용)
   const [mySlug, setMySlug] = useState("");
 
-  // 컴포넌트 마운트 시 프로필 불러오기
+  // 컴포넌트 마운트 시 프로필 불러오기 (없으면 Google 계정에서 자동 채움)
   useEffect(() => {
     const profile = getMyProfile();
     if (profile) {
@@ -59,10 +61,28 @@ export default function GreetingEmailDialog({
       if (profile.slug) setMySlug(profile.slug);
       setStep("preview");
     } else {
-      // 프로필이 없으면 입력부터
-      setStep("profile");
+      // Google 계정에서 이름/이메일 자동 채움
+      if (user) {
+        setMyName(user.displayName || "");
+        setMyEmail(user.email || "");
+        // 자동 채움된 상태로 바로 미리보기 (이름+이메일 있으면 충분)
+        if (user.displayName && user.email) {
+          saveMyProfile({
+            name: user.displayName,
+            company: "",
+            title: "",
+            email: user.email,
+            phone: "",
+          });
+          setStep("preview");
+        } else {
+          setStep("profile");
+        }
+      } else {
+        setStep("profile");
+      }
     }
-  }, []);
+  }, [user]);
 
   /** 프로필 저장 후 미리보기로 이동 */
   const handleProfileSave = () => {

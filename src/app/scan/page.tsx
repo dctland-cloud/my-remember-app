@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { compressForApi, generateThumbnail } from "@/lib/image-utils";
+import { extractCardInfo } from "@/lib/gemini-client";
 import { saveCard, updateCard, checkDuplicate } from "@/lib/cards";
 import CameraCapture from "@/components/CameraCapture";
 import DuplicateDialog from "@/components/DuplicateDialog";
@@ -84,24 +85,8 @@ export default function ScanPage() {
 
       setThumbnailBase64(thumbnail);
 
-      // Gemini API로 명함 분석 요청
-      const response = await fetch("/api/ocr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageBase64: apiBase64,
-          mimeType: file.type || "image/jpeg",
-        }),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(
-          errData.error || "명함 인식에 실패했습니다."
-        );
-      }
-
-      const result: OcrResult = await response.json();
+      // Gemini API로 명함 분석 (클라이언트 직접 호출 — 서버 거치지 않아 빠름)
+      const result = await extractCardInfo(apiBase64, file.type || "image/jpeg");
 
       // AI 결과를 폼에 채움
       setName(result.name);

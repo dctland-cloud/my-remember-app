@@ -12,8 +12,8 @@ import imageCompression from "browser-image-compression";
  */
 export async function compressForApi(file: File): Promise<string> {
   const compressed = await imageCompression(file, {
-    maxSizeMB: 1,
-    maxWidthOrHeight: 2048,
+    maxSizeMB: 0.2,
+    maxWidthOrHeight: 1200,
     useWebWorker: true,
   });
 

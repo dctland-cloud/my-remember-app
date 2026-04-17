@@ -16,6 +16,8 @@ import {
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   User,
 } from "firebase/auth";
@@ -55,7 +57,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Google 팝업으로 로그인
+  // 리다이렉트 결과 처리 (페이지 로드 시)
+  useEffect(() => {
+    const auth = getFirebaseAuth();
+    if (!auth) return;
+    getRedirectResult(auth).catch((error) => {
+      console.error("리다이렉트 로그인 결과 처리 실패:", error);
+    });
+  }, []);
+
+  // Google 로그인 (팝업 시도 → 실패 시 리다이렉트로 전환)
   const signIn = async () => {
     const auth = getFirebaseAuth();
     if (!auth) {
@@ -64,8 +75,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       await signInWithPopup(auth, getGoogleProvider());
-    } catch (error) {
-      console.error("로그인 실패:", error);
+    } catch (error: unknown) {
+      const firebaseError = error as { code?: string };
+      if (firebaseError.code === "auth/popup-blocked" || firebaseError.code === "auth/popup-closed-by-user") {
+        // 팝업이 차단되면 리다이렉트 방식으로 전환
+        console.log("팝업 차단됨, 리다이렉트 방식으로 전환");
+        await signInWithRedirect(auth, getGoogleProvider());
+      } else {
+        console.error("로그인 실패:", error);
+      }
     }
   };
 
