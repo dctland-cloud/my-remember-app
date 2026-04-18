@@ -9,8 +9,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  sendGreetingEmail,
-  isEmailJSConfigured,
+  openGreetingEmail,
   getMyProfile,
   saveMyProfile,
   type GreetingEmailParams,
@@ -28,7 +27,7 @@ interface GreetingEmailDialogProps {
 }
 
 /** 대화상자 표시 단계 */
-type DialogStep = "profile" | "preview" | "sending" | "success" | "error";
+type DialogStep = "profile" | "preview" | "opened" | "error";
 
 export default function GreetingEmailDialog({
   card,
@@ -101,18 +100,15 @@ export default function GreetingEmailDialog({
     setStep("preview");
   };
 
-  /** 이메일 발송 실행 */
-  const handleSend = async () => {
-    if (!isEmailJSConfigured()) {
-      setErrorMsg(
-        "이메일 서비스가 설정되지 않았습니다. 관리자에게 문의해주세요."
-      );
+  /** Gmail 작성창 열기 */
+  const handleSend = () => {
+    setErrorMsg("");
+
+    if (!card.email) {
+      setErrorMsg("수신자의 이메일 주소가 없습니다.");
       setStep("error");
       return;
     }
-
-    setStep("sending");
-    setErrorMsg("");
 
     const params: GreetingEmailParams = {
       toEmail: card.email,
@@ -127,16 +123,14 @@ export default function GreetingEmailDialog({
         : `${window.location.origin}/mycard`,
     };
 
-    const success = await sendGreetingEmail(params);
+    const opened = openGreetingEmail(params);
 
-    if (success) {
-      setStep("success");
-      // 1.5초 후 자동으로 닫기
-      setTimeout(() => {
-        onSent();
-      }, 1500);
+    if (opened) {
+      setStep("opened");
     } else {
-      setErrorMsg("이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      setErrorMsg(
+        "팝업이 차단되어 Gmail 창을 열 수 없습니다. 브라우저 주소창의 팝업 차단을 해제해주세요."
+      );
       setStep("error");
     }
   };
@@ -149,30 +143,28 @@ export default function GreetingEmailDialog({
           <h3 className="text-lg font-bold text-text">
             {step === "profile"
               ? "내 프로필 설정"
-              : step === "success"
-              ? "발송 완료"
+              : step === "opened"
+              ? "Gmail 열림"
               : "인사 이메일 보내기"}
           </h3>
-          {step !== "sending" && step !== "success" && (
-            <button
-              onClick={onClose}
-              className="text-text-secondary hover:text-text p-1"
+          <button
+            onClick={onClose}
+            className="text-text-secondary hover:text-text p-1"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-5 h-5"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          )}
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
         </div>
 
         <div className="px-5 py-4">
@@ -297,28 +289,15 @@ ${myName} 드림`}
                   onClick={handleSend}
                   className="flex-1 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all"
                 >
-                  보내기
+                  Gmail에서 열기
                 </button>
               </div>
             </div>
           )}
 
-          {/* ───── 발송 중 ───── */}
-          {step === "sending" && (
-            <div className="flex flex-col items-center gap-4 py-8">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
-                <div className="absolute inset-0 border-4 border-transparent border-t-primary rounded-full animate-spin" />
-              </div>
-              <p className="text-sm text-text-secondary">
-                이메일을 발송하고 있습니다...
-              </p>
-            </div>
-          )}
-
-          {/* ───── 발송 성공 ───── */}
-          {step === "success" && (
-            <div className="flex flex-col items-center gap-4 py-8">
+          {/* ───── Gmail 작성창 열림 ───── */}
+          {step === "opened" && (
+            <div className="flex flex-col items-center gap-4 py-6">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -333,14 +312,25 @@ ${myName} 드림`}
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <p className="text-base font-semibold text-text">
-                  인사 이메일이 발송되었습니다
+                  Gmail 작성창이 열렸습니다
                 </p>
-                <p className="text-sm text-text-secondary mt-1">
-                  {card.name}님에게 이메일을 보냈습니다.
+                <p className="text-sm text-text-secondary">
+                  새 탭의 Gmail에서 내용을 확인하고
+                  <br />
+                  <b className="text-text">"보내기"</b>를 눌러 발송을 완료해주세요.
+                </p>
+                <p className="text-xs text-text-secondary/70 pt-1">
+                  (Gmail 보낸편지함에 기록이 남습니다)
                 </p>
               </div>
+              <button
+                onClick={onSent}
+                className="w-full py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all mt-2"
+              >
+                확인
+              </button>
             </div>
           )}
 

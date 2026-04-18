@@ -1,95 +1,82 @@
 /**
- * EmailJS 이메일 발송 유틸리티
- * - EmailJS는 클라이언트에서 직접 이메일을 보내는 서비스입니다.
- * - 환경변수(NEXT_PUBLIC_EMAILJS_*)에서 설정을 읽어 초기화합니다.
- * - sendGreetingEmail(): 인사 이메일을 발송하고 성공 여부를 반환합니다.
+ * 인사 이메일 발송 유틸리티 (Gmail 작성창 방식)
+ * - 사용자의 Gmail 작성창을 새 탭에 열어줍니다.
+ * - 수신자/제목/본문이 미리 채워진 상태 → 사용자가 "보내기" 클릭으로 발송
+ * - 가입/API 키 불필요, 완전 무료, 무제한
+ * - 내 Gmail 보낸편지함에 기록됨 (본인 명의 발신)
  */
-
-import emailjs from "@emailjs/browser";
-
-/** EmailJS 환경변수에서 읽어오는 설정 */
-const SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "";
-const TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "";
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "";
-
-/** EmailJS가 사용 가능한지 확인 (환경변수 3개 모두 설정됐는지) */
-export function isEmailJSConfigured(): boolean {
-  return !!(SERVICE_ID && TEMPLATE_ID && PUBLIC_KEY);
-}
 
 /** 인사 이메일 발송에 필요한 파라미터 */
 export interface GreetingEmailParams {
-  /** 수신자 이메일 주소 */
   toEmail: string;
-  /** 수신자 이름 */
   toName: string;
-  /** 내 이름 */
   fromName: string;
-  /** 내 회사 */
   fromCompany: string;
-  /** 내 직책 */
   fromTitle: string;
-  /** 내 이메일 */
   fromEmail: string;
-  /** 내 전화번호 */
   fromPhone: string;
-  /** 디지털 명함 링크 */
   digitalCardUrl: string;
 }
 
+/** 인사 이메일 본문 생성 */
+function buildBody(params: GreetingEmailParams): string {
+  const lines: string[] = [
+    `${params.toName}님, 안녕하세요.`,
+    `만나 뵙게 되어 반갑습니다.`,
+    ``,
+    `제 연락처를 보내드립니다:`,
+    `- 이름: ${params.fromName}`,
+  ];
+  if (params.fromCompany) {
+    lines.push(
+      `- 회사: ${params.fromCompany}${params.fromTitle ? ` / ${params.fromTitle}` : ""}`
+    );
+  } else if (params.fromTitle) {
+    lines.push(`- 직책: ${params.fromTitle}`);
+  }
+  if (params.fromEmail) lines.push(`- 이메일: ${params.fromEmail}`);
+  if (params.fromPhone) lines.push(`- 전화: ${params.fromPhone}`);
+  if (params.digitalCardUrl) {
+    lines.push(``, `제 디지털 명함: ${params.digitalCardUrl}`);
+  }
+  lines.push(``, `좋은 하루 되세요.`, `${params.fromName} 드림`);
+  return lines.join("\n");
+}
+
+/** 이메일 제목 생성 */
+function buildSubject(params: GreetingEmailParams): string {
+  return params.fromCompany
+    ? `만나서 반갑습니다 - ${params.fromName} (${params.fromCompany})`
+    : `만나서 반갑습니다 - ${params.fromName}`;
+}
+
 /**
- * 인사 이메일 발송
- * - EmailJS를 통해 인사 이메일을 보냅니다.
- * - 성공하면 true, 실패하면 false를 반환합니다.
+ * Gmail 작성창 URL 생성
+ * - 로그인된 Gmail이 새 탭에서 열리며 수신자/제목/본문이 자동 채워짐
  */
-export async function sendGreetingEmail(
-  params: GreetingEmailParams
-): Promise<boolean> {
-  if (!isEmailJSConfigured()) {
-    console.error(
-      "EmailJS 설정이 완료되지 않았습니다. .env.local에 NEXT_PUBLIC_EMAILJS_* 값을 설정해주세요."
-    );
-    return false;
-  }
+export function buildGmailComposeUrl(params: GreetingEmailParams): string {
+  const url = new URL("https://mail.google.com/mail/");
+  url.searchParams.set("view", "cm");
+  url.searchParams.set("fs", "1");
+  url.searchParams.set("to", params.toEmail);
+  url.searchParams.set("su", buildSubject(params));
+  url.searchParams.set("body", buildBody(params));
+  return url.toString();
+}
 
-  try {
-    // EmailJS 템플릿에 전달할 변수 (EmailJS 대시보드의 템플릿과 변수명을 맞춰야 함)
-    const templateParams = {
-      to_email: params.toEmail,
-      to_name: params.toName,
-      from_name: params.fromName,
-      from_company: params.fromCompany,
-      from_title: params.fromTitle,
-      from_email: params.fromEmail,
-      from_phone: params.fromPhone,
-      digital_card_url: params.digitalCardUrl,
-      // 이메일 제목용
-      subject: `만나서 반갑습니다 - ${params.fromName} (${params.fromCompany})`,
-    };
-
-    const result = await emailjs.send(
-      SERVICE_ID,
-      TEMPLATE_ID,
-      templateParams,
-      PUBLIC_KEY
-    );
-
-    if (result.status === 200) {
-      return true;
-    }
-
-    console.error("EmailJS 발송 실패 - 상태코드:", result.status);
-    return false;
-  } catch (error) {
-    console.error("EmailJS 발송 오류:", error);
-    return false;
-  }
+/**
+ * 인사 이메일 작성창 열기
+ * - Gmail 작성창을 새 탭에 엽니다.
+ * - 팝업 차단 시 false를 반환합니다.
+ */
+export function openGreetingEmail(params: GreetingEmailParams): boolean {
+  const url = buildGmailComposeUrl(params);
+  const win = window.open(url, "_blank", "noopener,noreferrer");
+  return win !== null;
 }
 
 /**
  * 내 프로필 정보 (localStorage에서 읽기/저장)
- * - Phase 5의 설정 페이지에서 본격적으로 관리됩니다.
- * - 지금은 localStorage를 임시 저장소로 사용합니다.
  */
 export interface MyProfile {
   name: string;
@@ -102,7 +89,6 @@ export interface MyProfile {
 
 const PROFILE_STORAGE_KEY = "my-remember-profile";
 
-/** localStorage에서 내 프로필 가져오기 */
 export function getMyProfile(): MyProfile | null {
   if (typeof window === "undefined") return null;
   try {
@@ -114,7 +100,6 @@ export function getMyProfile(): MyProfile | null {
   }
 }
 
-/** localStorage에 내 프로필 저장하기 */
 export function saveMyProfile(profile: MyProfile): void {
   if (typeof window === "undefined") return;
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
