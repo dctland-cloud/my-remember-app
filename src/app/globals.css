@@ -1,207 +1,89 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #3b82f6;
-  --color-background: #f8fafc;
-  --color-surface: #ffffff;
-  --color-text: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-border: #e2e8f0;
-  --color-nav-active: #2563eb;
-  --color-nav-inactive: #94a3b8;
+  /* ─── 딥 네이비 악센트 시스템 ─── */
+  --color-primary: #1B2A4E;        /* 딥 네이비 */
+  --color-primary-dark: #111C36;   /* 더 진한 네이비 */
+  --color-primary-light: #2C3E6B;  /* 호버/보조 */
+
+  /* 따뜻한 오프화이트 배경 + 순백 카드 */
+  --color-background: #F5F3EE;     /* 따뜻한 오프화이트 (paper) */
+  --color-surface: #FFFFFF;        /* 카드 배경 */
+  --color-surface-2: #EEE9E0;      /* 필터 pill 비활성 배경 */
+
+  /* 텍스트 */
+  --color-text: #1C1C1E;           /* ink */
+  --color-text-secondary: #6B6B70; /* 보조 텍스트 */
+  --color-border: #E8E4DB;         /* 페이퍼 톤에 맞는 보더 */
+
+  /* 네비 */
+  --color-nav-active: #1B2A4E;
+  --color-nav-inactive: #9A958C;
 }
 
-/* ─── 기본 스타일 초기화 ─── */
+/* ─── 기본 스타일 ─── */
 body {
   font-family:
-    "Pretendard",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    "Noto Sans KR",
-    sans-serif;
+    -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "SF Pro Display",
+    "Pretendard", "Noto Sans KR",
+    system-ui, sans-serif;
   background-color: var(--color-background);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
-/* 모바일 앱처럼 보이도록 스크롤 오버슈트 방지 */
 html {
   overscroll-behavior: none;
   scroll-behavior: smooth;
 }
 
-/* 모바일에서 탭 하이라이트 제거 */
-* {
-  -webkit-tap-highlight-color: transparent;
-}
+* { -webkit-tap-highlight-color: transparent; }
 
-/* ─── 글로벌 트랜지션 ─── */
-/* 모든 버튼과 링크에 기본 트랜지션 적용 */
-button,
-a {
-  transition: all 0.2s ease;
-}
-
-/* 입력 필드 포커스 애니메이션 */
-input:focus,
-textarea:focus,
-select:focus {
+button, a { transition: all 0.2s ease; }
+input:focus, textarea:focus, select:focus {
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-/* ─── 키프레임 애니메이션 ─── */
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+/* ─── 애니메이션 ─── */
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes toastIn { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
-@keyframes slideDown {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
+.animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-slide-down { animation: slideDown 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-scale-in { animation: scaleIn 0.25s cubic-bezier(0.32, 0.72, 0, 1); }
+.animate-toast { animation: toastIn 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-@keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -20px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-/* ─── 유틸리티 애니메이션 클래스 ─── */
-.animate-slide-up {
-  animation: slideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.animate-slide-down {
-  animation: slideDown 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.25s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.animate-toast {
-  animation: toastIn 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-/* ─── 스켈레톤 로딩 시머 ─── */
+/* 스켈레톤 */
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--color-border) 25%,
-    #f1f5f9 50%,
-    var(--color-border) 75%
-  );
+  background: linear-gradient(90deg, var(--color-border) 25%, #F1EEE7 50%, var(--color-border) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* ─── 카드 호버 효과 ─── */
-.card-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.card-hover:active {
-  transform: scale(0.99);
-}
+/* 카드 호버 */
+.card-hover { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.card-hover:active { transform: scale(0.99); }
 
-/* ─── 모달 오버레이 ─── */
-.modal-overlay {
-  animation: fadeIn 0.2s ease-out;
-  backdrop-filter: blur(4px);
-}
+.modal-overlay { animation: fadeIn 0.2s ease-out; backdrop-filter: blur(4px); }
 
-/* ─── 스크롤바 커스텀 (필터 칩 영역 등) ─── */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* ─── safe-area 대응 ─── */
 @supports (padding: env(safe-area-inset-bottom)) {
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
+  .safe-area-bottom { padding-bottom: env(safe-area-inset-bottom); }
 }
 
-/* ─── PWA standalone 모드에서 상단 영역 보정 ─── */
 @media all and (display-mode: standalone) {
-  body {
-    padding-top: env(safe-area-inset-top);
-  }
+  body { padding-top: env(safe-area-inset-top); }
 }

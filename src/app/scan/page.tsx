@@ -8,17 +8,19 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { compressForApi, generateThumbnail } from "@/lib/image-utils";
 import { extractCardInfo } from "@/lib/gemini-client";
-import { saveCard, updateCard, checkDuplicate } from "@/lib/cards";
+import { saveCard, updateCard, checkDuplicate, getCards } from "@/lib/cards";
 import CameraCapture from "@/components/CameraCapture";
 import DuplicateDialog from "@/components/DuplicateDialog";
 import GreetingEmailDialog from "@/components/GreetingEmailDialog";
+import TagInput from "@/components/TagInput";
 import type { DuplicateChoice } from "@/components/DuplicateDialog";
-import type { OcrResult, CardData } from "@/types/card";
+import type { CardData } from "@/types/card";
+import { getCardTags } from "@/types/card";
 
 /** 페이지 진행 단계 */
 type Step = "capture" | "analyzing" | "edit";
@@ -51,7 +53,27 @@ export default function ScanPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [memo, setMemo] = useState("");
-  const [metAt, setMetAt] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+
+  // 자주 쓴 키워드 제안 — 기존 명함들에서 추출
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
+  useEffect(() => {
+    if (!user) return;
+    getCards(user.uid)
+      .then((all) => {
+        const counts: Record<string, number> = {};
+        all.forEach((c) => {
+          getCardTags(c).forEach((t) => {
+            counts[t] = (counts[t] || 0) + 1;
+          });
+        });
+        const sorted = Object.entries(counts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([t]) => t);
+        setTagSuggestions(sorted);
+      })
+      .catch(() => { /* 조용히 무시 */ });
+  }, [user]);
 
   // 로그인 확인 (비로그인 시 홈으로 이동)
   if (!loading && !user) {
@@ -155,7 +177,9 @@ export default function ScanPage() {
       phone,
       address,
       memo,
-      metAt,
+      // 레거시 필드 — 첫 키워드를 mirror (구버전 UI·CSV 호환)
+      metAt: tags[0] ?? "",
+      tags,
       thumbnailBase64,
       greetingEmailSent: false,
       createdAt: new Date().toISOString(),
@@ -186,7 +210,10 @@ export default function ScanPage() {
     setSaving(true);
     try {
       if (choice === "update" && duplicateCard?.id) {
-        // 기존 명함 업데이트
+        // 기존 명함 업데이트 — 기존 tags에 새 tags를 합치고 중복 제거
+        const mergedTags = Array.from(
+          new Set([...(getCardTags(duplicateCard)), ...tags])
+        );
         await updateCard(duplicateCard.id, {
           name,
           company,
@@ -195,7 +222,8 @@ export default function ScanPage() {
           phone,
           address,
           memo,
-          metAt,
+          metAt: mergedTags[0] ?? "",
+          tags: mergedTags,
           thumbnailBase64,
         });
         setSaving(false);
@@ -223,7 +251,7 @@ export default function ScanPage() {
     setPhone("");
     setAddress("");
     setMemo("");
-    setMetAt("");
+    setTags([]);
     setError("");
   };
 
@@ -424,7 +452,21 @@ export default function ScanPage() {
             </div>
 
             <FormField label="메모" value={memo} onChange={setMemo} placeholder="AI 프로젝트 협업 논의" />
-            <FormField label="만난 장소" value={metAt} onChange={setMetAt} placeholder="CES 2026" />
+
+            {/* 기억 키워드 — 장소·역할·프로젝트 등 자유롭게 */}
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">
+                기억 키워드
+                <span className="ml-1.5 text-xs font-normal text-text-secondary">
+                  장소·역할·프로젝트 등 자유롭게
+                </span>
+              </label>
+              <TagInput
+                value={tags}
+                onChange={setTags}
+                suggestions={tagSuggestions}
+              />
+            </div>
           </div>
 
           {/* 버튼 영역 */}

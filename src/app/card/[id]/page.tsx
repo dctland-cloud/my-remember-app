@@ -12,9 +12,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { getCard, updateCard, deleteCard } from "@/lib/cards";
+import { getCard, updateCard, deleteCard, getCards } from "@/lib/cards";
 import type { CardData } from "@/types/card";
+import { getCardTags } from "@/types/card";
 import GreetingEmailDialog from "@/components/GreetingEmailDialog";
+import TagInput from "@/components/TagInput";
 
 export default function CardDetailPage() {
   const { user, loading: authLoading } = useAuth();
@@ -39,7 +41,10 @@ export default function CardDetailPage() {
   const [editPhone, setEditPhone] = useState("");
   const [editAddress, setEditAddress] = useState("");
   const [editMemo, setEditMemo] = useState("");
-  const [editMetAt, setEditMetAt] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
+
+  // 자주 쓴 키워드 제안
+  const [tagSuggestions, setTagSuggestions] = useState<string[]>([]);
 
   // 비로그인 시 홈으로 이동
   useEffect(() => {
@@ -62,7 +67,7 @@ export default function CardDetailPage() {
           return;
         }
         setCard(result);
-        // 편집 폼 초기값 설정
+        // 편집 폼 초기값 설정 — tags는 레거시 metAt까지 자동 병합
         setEditName(result.name);
         setEditCompany(result.company);
         setEditTitle(result.title);
@@ -70,7 +75,7 @@ export default function CardDetailPage() {
         setEditPhone(result.phone);
         setEditAddress(result.address);
         setEditMemo(result.memo);
-        setEditMetAt(result.metAt);
+        setEditTags(getCardTags(result));
       } catch (err) {
         console.error("명함 불러오기 실패:", err);
         router.push("/");
@@ -82,6 +87,26 @@ export default function CardDetailPage() {
     fetchCard();
   }, [user, cardId, router]);
 
+  // 자주 쓴 키워드 추천 로드 (사용자의 전체 명함 기반)
+  useEffect(() => {
+    if (!user) return;
+    getCards(user.uid)
+      .then((all) => {
+        const counts: Record<string, number> = {};
+        all.forEach((c) => {
+          getCardTags(c).forEach((t) => {
+            counts[t] = (counts[t] || 0) + 1;
+          });
+        });
+        setTagSuggestions(
+          Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([t]) => t)
+        );
+      })
+      .catch(() => { /* 조용히 무시 */ });
+  }, [user]);
+
   /** 편집 모드 시작 */
   const startEdit = () => {
     if (!card) return;
@@ -92,7 +117,7 @@ export default function CardDetailPage() {
     setEditPhone(card.phone);
     setEditAddress(card.address);
     setEditMemo(card.memo);
-    setEditMetAt(card.metAt);
+    setEditTags(getCardTags(card));
     setEditing(true);
   };
 
@@ -109,7 +134,9 @@ export default function CardDetailPage() {
         phone: editPhone,
         address: editAddress,
         memo: editMemo,
-        metAt: editMetAt,
+        // 레거시 metAt은 첫 키워드 mirror (기존 UI·CSV 호환)
+        metAt: editTags[0] ?? "",
+        tags: editTags,
       };
       await updateCard(card.id, updates);
       setCard({ ...card, ...updates, updatedAt: new Date().toISOString() });
@@ -259,7 +286,21 @@ export default function CardDetailPage() {
           <EditField label="전화" value={editPhone} onChange={setEditPhone} type="tel" />
           <EditField label="주소" value={editAddress} onChange={setEditAddress} />
           <EditField label="메모" value={editMemo} onChange={setEditMemo} />
-          <EditField label="만난 장소" value={editMetAt} onChange={setEditMetAt} />
+
+          {/* 기억 키워드 */}
+          <div>
+            <label className="block text-sm font-medium text-text mb-1.5">
+              기억 키워드
+              <span className="ml-1.5 text-xs font-normal text-text-secondary">
+                장소·역할·프로젝트 등 자유롭게
+              </span>
+            </label>
+            <TagInput
+              value={editTags}
+              onChange={setEditTags}
+              suggestions={tagSuggestions}
+            />
+          </div>
 
           <div className="flex gap-3 pt-4">
             <button
@@ -384,6 +425,21 @@ export default function CardDetailPage() {
             />
           )}
 
+          {/* 기억 키워드 칩 */}
+          {getCardTags(card).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {getCardTags(card).map((t) => (
+                <span
+                  key={t}
+                  className="inline-block text-[12px] font-medium text-primary px-2.5 py-1 rounded-full tracking-tight"
+                  style={{ background: "rgba(27,42,78,0.08)" }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+
           {/* 상세 정보 */}
           <div className="bg-surface rounded-xl border border-border divide-y divide-border">
             <InfoRow label="이름" value={card.name} />
@@ -392,7 +448,6 @@ export default function CardDetailPage() {
             <InfoRow label="이메일" value={card.email} />
             <InfoRow label="전화" value={card.phone} />
             <InfoRow label="주소" value={card.address} />
-            <InfoRow label="만난 장소" value={card.metAt} />
             <InfoRow label="메모" value={card.memo} />
           </div>
 

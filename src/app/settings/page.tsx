@@ -20,6 +20,7 @@ import {
 } from "@/lib/profile";
 import { getCards } from "@/lib/cards";
 import type { CardData } from "@/types/card";
+import { getCardTags } from "@/types/card";
 
 export default function SettingsPage() {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -150,11 +151,11 @@ export default function SettingsPage() {
         "전화",
         "주소",
         "메모",
-        "만난장소",
+        "기억키워드",
         "저장일",
       ];
 
-      // CSV 행 생성
+      // CSV 행 생성 — 키워드는 세미콜론 구분, 레거시 metAt도 자동 포함
       const rows = cards.map((card) => [
         escapeCSV(card.name),
         escapeCSV(card.company),
@@ -163,7 +164,7 @@ export default function SettingsPage() {
         escapeCSV(card.phone),
         escapeCSV(card.address),
         escapeCSV(card.memo),
-        escapeCSV(card.metAt),
+        escapeCSV(getCardTags(card).join("; ")),
         escapeCSV(
           card.createdAt
             ? new Date(card.createdAt).toLocaleDateString("ko-KR")
