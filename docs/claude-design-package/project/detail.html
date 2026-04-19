@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1400" />
+<title>나만의 리멤버 — 명함 상세</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Pretendard", sans-serif;
+    background: #FAFAF7; color: #1C1C1E; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="detail.jsx"></script>
+<script type="text/babel">
+function Cap({ label, title, notes }) {
+  return (
+    <div style={{ marginTop: 22, maxWidth: 390 }}>
+      <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        State · {label}
+      </div>
+      <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: -0.3, marginTop: 4 }}>{title}</div>
+      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {notes.map((n, i) => (
+          <li key={i} style={{ fontSize: 13, color: 'rgba(60,60,67,0.75)', lineHeight: 1.5, paddingLeft: 14, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'rgba(60,60,67,0.4)' }}>—</span>
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '56px 56px 120px', maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ marginBottom: 48 }}>
+        <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          나만의 리멤버 · 명함 상세
+        </div>
+        <h1 style={{ fontSize: 44, fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.1, margin: '8px 0 14px', maxWidth: 920 }}>
+          한 사람, 한 페이지.<br/>
+          <span style={{ color: '#1B2A4E' }}>키워드 편집이 가장 쉬운 곳.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.55 }}>
+          히어로에 아바타·이름·키워드 / 아래에 연락 액션 / 정보 카드 / 메모. 
+          편집 모드에서는 <strong>키워드 섹션이 시각적으로 강조</strong>됩니다 — 나중에 돌아와 덧붙이기 쉽게.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><DetailView /></div>
+          <Cap label="A" title="상세 보기 (기본)" notes={[
+            '큰 아바타 + 이름 + 태그 배지',
+            '전화·이메일·인사메일 빠른 액션 3개',
+            '아이콘 동반 정보 카드 (탭 가능)',
+            '메모 블록 + 저장 메타데이터 풋노트',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><DetailEdit /></div>
+          <Cap label="B" title="편집 모드 (키워드 강조)" notes={[
+            '상단: 취소 / 편집 / 저장 표준 iOS 패턴',
+            '키워드 섹션: 네이비 보더로 강조',
+            '태그 × 버튼 · 새 키워드 입력 · 최근 사용 리스트',
+            '하단: 삭제(빨강) — 실수 방지용 분리',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><DetailActionSheet /></div>
+          <Cap label="C" title="액션 시트 (공유)" notes={[
+            '주요 액션: 인사 이메일 (네이비 아이콘 강조)',
+            '부가: 이미지 공유 / 연락처 추가 / 복사',
+            '맥락이 있는 부제 (컨퍼런스 힌트)',
+            'iOS 표준 — 취소 블록 분리',
+          ]} />
+        </div>
+      </div>
+
+      <div style={{ marginTop: 80, paddingTop: 24, borderTop: '0.5px solid rgba(0,0,0,0.08)', fontSize: 14, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.6 }}>
+        <strong style={{ color: '#1C1C1E' }}>설계 포인트</strong> ·
+        태그는 "보기"에서는 정보의 일부지만, "편집"에서는 주인공. 네이비 톤으로 섹션 자체가 포커스 됩니다.
+        삭제는 편집 안쪽에만 넣어 실수로 삭제되는 걸 막아요.
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

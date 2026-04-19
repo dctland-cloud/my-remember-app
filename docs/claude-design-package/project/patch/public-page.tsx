@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getPublicProfile, type PublicProfile } from "@/lib/profile";
+import { getProfileBySlug, type PublicProfile } from "@/lib/profile";
 
 export default function PublicProfilePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -16,7 +16,7 @@ export default function PublicProfilePage() {
 
   useEffect(() => {
     if (!slug) return;
-    getPublicProfile(slug).then((p) => { setProfile(p); setLoading(false); });
+    getProfileBySlug(slug).then((p) => { setProfile(p); setLoading(false); });
   }, [slug]);
 
   if (loading) {

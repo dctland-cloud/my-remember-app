@@ -53,3 +53,5 @@ serviceAccountKey.json
 # IDE
 .vscode/
 .idea/
+
+.vercel

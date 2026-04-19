@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1700" />
+<title>나만의 리멤버 — 스캔 플로우</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Pretendard", sans-serif;
+    background: #FAFAF7; color: #1C1C1E; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="scan-flow.jsx"></script>
+<script type="text/babel">
+function StepCaption({ n, title, notes }) {
+  return (
+    <div style={{ marginTop: 22, maxWidth: 390 }}>
+      <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        Step 0{n}
+      </div>
+      <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: -0.3, marginTop: 4 }}>{title}</div>
+      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {notes.map((n, i) => (
+          <li key={i} style={{ fontSize: 13, color: 'rgba(60,60,67,0.75)', lineHeight: 1.5, paddingLeft: 14, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'rgba(60,60,67,0.4)' }}>—</span>
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '56px 56px 120px', maxWidth: 1700, margin: '0 auto' }}>
+      <div style={{ marginBottom: 48 }}>
+        <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          나만의 리멤버 · 스캔 플로우
+        </div>
+        <h1 style={{
+          fontSize: 44, fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.1,
+          margin: '8px 0 14px', maxWidth: 920,
+        }}>
+          촬영 → AI 분석 → 확인·키워드 → 저장.<br/>
+          <span style={{ color: '#1B2A4E' }}>네 걸음, 최대한 짧게.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.55 }}>
+          기존 플로우에 <strong>기억 키워드 입력</strong>을 세 번째 단계에 자연스럽게 합쳤습니다.
+          별도 화면이 아니라 편집 폼 안에서 — 최근 쓴 키워드 제안까지.
+        </p>
+      </div>
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 32, alignItems: 'start',
+      }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><ScanStep1 /></div>
+          <StepCaption n={1} title="촬영" notes={[
+            '다크 뷰파인더 + 코너 가이드',
+            '네이비 테두리 셔터 버튼',
+            '좌측 갤러리 선택 옵션',
+            '진행 막대: 1/4 채움',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><ScanStep2 /></div>
+          <StepCaption n={2} title="AI 분석 중" notes={[
+            '촬영본 미리보기 + 스캔 라인',
+            '3단계 체크리스트로 불안감 감소',
+            '"읽고 있어요" 진행 중 카피',
+            '가장 짧은 대기(1~3초) 가정',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><ScanStep3 /></div>
+          <StepCaption n={3} title="확인 · 키워드" notes={[
+            '추출된 필드 카드 (수정 가능)',
+            '네이비 섹션에 기억 키워드 입력',
+            '최근 사용 키워드를 탭으로 추가',
+            '하단 고정 CTA — "저장하기"',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><ScanStep4 /></div>
+          <StepCaption n={4} title="저장 완료" notes={[
+            '네이비 체크 배지 + 이름·키워드 재확인',
+            '이메일 제안을 별도 모달 아닌 카드로',
+            '"나중에" / "작성하기" 이지 선택',
+            '거부감 낮춘 부드러운 톤',
+          ]} />
+        </div>
+      </div>
+
+      {/* 설계 메모 */}
+      <div style={{ marginTop: 80, paddingTop: 24, borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.6 }}>
+          <strong style={{ color: '#1C1C1E' }}>설계 원칙</strong> ·
+          키워드 입력은 반드시 "편집 단계" 안에서. 별도 화면을 만들면 스킵되거나 귀찮게 느껴집니다.
+          대신 <em>자동 제안 + 최근 사용</em>으로 탭 한 번에 완료되도록.
+          키워드는 <strong>빈 상태로 저장 가능</strong> — 필수 아님.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

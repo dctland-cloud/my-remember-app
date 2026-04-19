@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1400" />
+<title>나만의 리멤버 — 내 명함 + 설정</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Pretendard", sans-serif;
+    background: #FAFAF7; color: #1C1C1E; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="mycard-settings.jsx"></script>
+<script type="text/babel">
+function Cap({ label, title, notes }) {
+  return (
+    <div style={{ marginTop: 22, maxWidth: 390 }}>
+      <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.4, textTransform: 'uppercase' }}>{label}</div>
+      <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: -0.3, marginTop: 4 }}>{title}</div>
+      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {notes.map((n, i) => (
+          <li key={i} style={{ fontSize: 13, color: 'rgba(60,60,67,0.75)', lineHeight: 1.5, paddingLeft: 14, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'rgba(60,60,67,0.4)' }}>—</span>
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '56px 56px 120px', maxWidth: 1400, margin: '0 auto' }}>
+      <div style={{ marginBottom: 48 }}>
+        <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          나만의 리멤버 · 내 명함 + 설정
+        </div>
+        <h1 style={{ fontSize: 44, fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.1, margin: '8px 0 14px', maxWidth: 920 }}>
+          내가 주는 명함은 딱 한 장.<br/>
+          <span style={{ color: '#1B2A4E' }}>네이비 카드 + 간결한 설정.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.55 }}>
+          앱 안에서 보는 프리뷰와 공개 페이지가 동일한 명함 카드를 공유합니다.
+          설정은 섹션 라벨로 구조를 드러내고 저장/새로생성 같은 핵심 액션을 네이비로 강조.
+        </p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><MyCard /></div>
+          <Cap label="내 명함 (앱 안)" title="미리보기 + 공유" notes={[
+            '네이비 풀블리드 카드 — 내가 주는 물건답게',
+            '공개 URL 인라인 표시 + 복사 버튼',
+            '공유하기 (네이비) + QR 코드 보조',
+            '설정으로 이동하는 미묘한 링크',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><PublicView /></div>
+          <Cap label="공개 페이지 (상대방 시점)" title="/p/[slug]" notes={[
+            '같은 네이비 카드로 브랜드 일관성',
+            '이메일·전화·연락처 저장 — 세 개의 큰 액션',
+            '탭 타깃 충분히 크게 (44px 이상)',
+            '푸터에 리멤버 브랜딩',
+          ]} />
+        </div>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}><SettingsPage /></div>
+          <Cap label="설정" title="섹션 기반 재구성" notes={[
+            '내 정보 / 공개 주소 / 데이터 / 계정',
+            '섹션 라벨은 네이비 캡 (시각적 리듬)',
+            'CSV 내보내기: 초록 버튼 → 카드 로우로 통합',
+            '로그아웃은 "계정" 섹션 안으로',
+          ]} />
+        </div>
+      </div>
+
+      <div style={{ marginTop: 80, paddingTop: 24, borderTop: '0.5px solid rgba(0,0,0,0.08)', fontSize: 14, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.6 }}>
+        <strong style={{ color: '#1C1C1E' }}>설계 원칙</strong> ·
+        내가 주는 명함 카드(네이비 풀블리드)는 앱 안과 공개 페이지에서 같아야 합니다.
+        설정은 폼 나열이 아닌 <em>섹션 기반 리스트</em>로 바꿔 iOS Settings 앱의 친숙함을 빌려옵니다.
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
