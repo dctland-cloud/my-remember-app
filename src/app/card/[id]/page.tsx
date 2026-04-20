@@ -17,6 +17,7 @@ import type { CardData } from "@/types/card";
 import { getCardTags } from "@/types/card";
 import GreetingEmailDialog from "@/components/GreetingEmailDialog";
 import TagInput from "@/components/TagInput";
+import { downloadVCard } from "@/lib/vcard";
 
 export default function CardDetailPage() {
   const { user, loading: authLoading } = useAuth();
@@ -403,6 +404,38 @@ export default function CardDetailPage() {
               인사 이메일 보내기
             </button>
           )}
+
+          {/* 📇 연락처에 저장 버튼 — vCard(VCF) 다운로드 */}
+          <button
+            onClick={() => {
+              downloadVCard({
+                name: card.name,
+                company: card.company,
+                title: card.title,
+                email: card.email,
+                phone: card.phone,
+              });
+              showSuccess("연락처 파일(.vcf)이 다운로드되었습니다");
+            }}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-surface text-text font-medium border border-border rounded-xl hover:bg-border/30 active:scale-[0.98] transition-all text-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="8.5" cy="7" r="4" />
+              <line x1="20" y1="8" x2="20" y2="14" />
+              <line x1="23" y1="11" x2="17" y2="11" />
+            </svg>
+            휴대폰 연락처에 저장
+          </button>
 
           {/* 인사 이메일 대화상자 */}
           {showEmailDialog && card && (

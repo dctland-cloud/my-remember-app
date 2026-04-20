@@ -1,9 +1,9 @@
 /**
- * 내 디지털 명함 미리보기 페이지
- * - 내 공개 명함이 다른 사람에게 어떻게 보이는지 미리 확인합니다.
- * - 공개 링크 복사, 공유하기 기능을 제공합니다.
- * - 설정 페이지로 이동하여 정보를 수정할 수 있습니다.
- * - 로그인 필수 페이지입니다.
+ * 내 디지털 명함 미리보기 페이지 — Apple 스타일 v2
+ * - 딥 네이비 풀블리드 명함 카드 (공개 페이지와 동일 디자인)
+ * - 공개 URL 인라인 표시 + 복사
+ * - 공유하기(Web Share API) + QR 코드 보조 버튼
+ * - 설정으로 이동하는 조용한 링크
  */
 
 "use client";
@@ -20,6 +20,7 @@ export default function MyCardPage() {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
 
   // 비로그인 시 홈으로 이동
   useEffect(() => {
@@ -59,7 +60,6 @@ export default function MyCardPage() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
       const textarea = document.createElement("textarea");
       textarea.value = publicUrl;
       document.body.appendChild(textarea);
@@ -78,14 +78,13 @@ export default function MyCardPage() {
       try {
         await navigator.share({
           title: `${profile.name} - 디지털 명함`,
-          text: `${profile.name} (${profile.company})의 디지털 명함입니다.`,
+          text: `${profile.name}${profile.company ? ` (${profile.company})` : ""}의 디지털 명함입니다.`,
           url: publicUrl,
         });
       } catch {
         // 사용자가 취소한 경우 무시
       }
     } else {
-      // Web Share API 미지원 시 링크 복사로 대체
       handleCopyLink();
     }
   };
@@ -99,10 +98,10 @@ export default function MyCardPage() {
     );
   }
 
-  // 프로필이 없는 경우
+  // 프로필이 없는 경우 (첫 방문)
   if (!profile) {
     return (
-      <div className="px-4 pt-12 max-w-lg mx-auto">
+      <div className="px-5 pt-14 max-w-lg mx-auto">
         <div className="text-center py-16">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -121,14 +120,14 @@ export default function MyCardPage() {
           <h2 className="text-lg font-bold text-text mb-2">
             아직 디지털 명함이 없습니다
           </h2>
-          <p className="text-sm text-text-secondary mb-6">
+          <p className="text-sm text-text-secondary mb-6 leading-relaxed">
             설정에서 내 정보를 입력하면
             <br />
             나만의 디지털 명함이 만들어집니다.
           </p>
           <button
             onClick={() => router.push("/settings")}
-            className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all"
+            className="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(27,42,78,0.2)]"
           >
             설정에서 만들기
           </button>
@@ -138,112 +137,145 @@ export default function MyCardPage() {
   }
 
   return (
-    <div className="px-4 pt-8 pb-4 max-w-lg mx-auto">
-      {/* 페이지 타이틀 */}
-      <h1 className="text-xl font-bold text-text text-center mb-6">
-        내 디지털 명함
-      </h1>
+    <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
+      {/* 헤더 (좌측 정렬, 작은 라벨 + 큰 타이틀) */}
+      <header className="mb-6">
+        <div className="text-[13px] font-medium text-text-secondary/80 uppercase tracking-wider">
+          내 디지털 명함
+        </div>
+        <h1 className="text-[28px] font-bold text-text tracking-tight mt-1">
+          이렇게 보여요
+        </h1>
+        <p className="text-[14px] text-text-secondary/80 mt-1 leading-relaxed tracking-tight">
+          링크로 공유하면 상대방에게 이 모습으로 보입니다
+        </p>
+      </header>
 
-      {/* 명함 카드 미리보기 */}
-      <div className="bg-white rounded-2xl shadow-lg border border-border overflow-hidden mb-6">
-        {/* 상단 컬러 바 */}
-        <div className="h-20 bg-gradient-to-r from-primary to-blue-400" />
+      {/* ───── 네이비 풀블리드 명함 카드 ───── */}
+      <div
+        className="relative overflow-hidden rounded-[20px] bg-primary text-white px-6 py-7 shadow-[0_16px_40px_rgba(27,42,78,0.3)]"
+      >
+        {/* 배경 장식 원 */}
+        <div className="absolute -right-10 -top-10 w-[180px] h-[180px] rounded-full bg-white/[0.04]" />
+        <div className="absolute right-8 -bottom-16 w-[120px] h-[120px] rounded-full bg-white/[0.03]" />
 
-        {/* 프로필 정보 */}
-        <div className="px-6 pb-6 -mt-6">
-          {/* 아바타 */}
-          <div className="w-16 h-16 bg-white rounded-full border-4 border-white shadow-md flex items-center justify-center text-primary font-bold text-xl mb-4">
-            {profile.name.charAt(0)}
+        <div className="relative">
+          <div className="text-[11px] uppercase tracking-[0.15em] text-white/55 mb-1">
+            나만의 리멤버
           </div>
-
-          <h2 className="text-2xl font-bold text-text">{profile.name}</h2>
+          <div className="text-[26px] font-bold tracking-tight mt-3">
+            {profile.name}
+          </div>
           {(profile.company || profile.title) && (
-            <p className="text-sm text-text-secondary mt-1">
-              {profile.company}
-              {profile.company && profile.title && " | "}
+            <div className="text-[14px] text-white/75 mt-0.5 tracking-tight">
               {profile.title}
-            </p>
+              {profile.title && profile.company && " · "}
+              {profile.company}
+            </div>
           )}
 
-          {/* 연락처 */}
-          <div className="mt-4 space-y-2">
-            {profile.email && (
-              <div className="flex items-center gap-2 text-sm text-text-secondary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="w-4 h-4 text-primary/70"
-                >
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                  <polyline points="22,6 12,13 2,6" />
-                </svg>
-                {profile.email}
-              </div>
-            )}
-            {profile.phone && (
-              <div className="flex items-center gap-2 text-sm text-text-secondary">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="w-4 h-4 text-primary/70"
-                >
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                {profile.phone}
-              </div>
-            )}
-          </div>
+          {(profile.email || profile.phone) && (
+            <div className="mt-7 pt-[18px] border-t border-white/15 flex flex-col gap-2.5">
+              {profile.email && (
+                <div className="flex items-center gap-2.5 text-[13px] text-white/85 tracking-tight">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.6)"
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                  {profile.email}
+                </div>
+              )}
+              {profile.phone && (
+                <div className="flex items-center gap-2.5 text-[13px] text-white/85 tracking-tight">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.6)"
+                    strokeWidth={1.8}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  {profile.phone}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 공개 URL 표시 */}
+      {/* ───── 공개 URL 칩 ───── */}
       {publicUrl && (
-        <div className="bg-surface rounded-xl border border-border p-3 mb-4">
-          <p className="text-xs text-text-secondary mb-1">공개 링크</p>
-          <p className="text-sm text-primary font-mono break-all">{publicUrl}</p>
-        </div>
-      )}
-
-      {/* 액션 버튼들 */}
-      <div className="flex gap-3 mb-4">
         <button
           onClick={handleCopyLink}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-surface border border-border rounded-xl text-sm font-medium text-text hover:bg-border/30 active:scale-[0.98] transition-all"
+          className="mt-4 w-full flex items-center gap-2.5 bg-surface border border-border/70 rounded-xl px-3.5 py-3 hover:bg-surface-2 active:scale-[0.99] transition-all"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-4 h-4"
-          >
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-          {copied ? "복사됨!" : "링크 복사"}
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary/80">
+            URL
+          </span>
+          <span className="flex-1 text-[12px] font-mono text-primary truncate text-left">
+            {publicUrl.replace(/^https?:\/\//, "")}
+          </span>
+          {copied ? (
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-primary"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-primary"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+          )}
         </button>
+      )}
+
+      {/* ───── 액션 버튼 (공유하기 + QR 코드) ───── */}
+      <div className="flex gap-2 mt-4">
         <button
           onClick={handleShare}
-          className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark active:scale-[0.98] transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary text-white rounded-xl text-[14px] font-semibold tracking-tight hover:bg-primary-dark active:scale-[0.98] transition-all shadow-[0_4px_12px_rgba(27,42,78,0.2)]"
         >
           <svg
-            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="w-4 h-4"
           >
             <circle cx="18" cy="5" r="3" />
             <circle cx="6" cy="12" r="3" />
@@ -253,15 +285,75 @@ export default function MyCardPage() {
           </svg>
           공유하기
         </button>
+        <button
+          onClick={() => setQrOpen(true)}
+          className="flex items-center justify-center gap-1.5 px-4 py-3 bg-surface border border-border/70 rounded-xl text-[14px] font-medium text-text tracking-tight hover:bg-surface-2 active:scale-[0.98] transition-all"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 9a9 9 0 1 0 9-9" />
+            <polyline points="3 4 3 9 8 9" />
+          </svg>
+          QR 코드
+        </button>
       </div>
 
-      {/* 설정으로 이동 */}
+      {/* ───── 설정 링크 (조용하게) ───── */}
       <button
         onClick={() => router.push("/settings")}
-        className="w-full py-3 text-sm text-text-secondary border border-border rounded-xl hover:bg-border/30 transition-colors"
+        className="w-full mt-7 text-center text-[14px] font-medium text-primary-light tracking-tight hover:text-primary transition-colors"
       >
-        내 정보 수정하기
+        설정에서 내 정보 편집
       </button>
+
+      {/* ───── QR 코드 모달 ───── */}
+      {qrOpen && publicUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6 modal-overlay bg-black/40"
+          onClick={() => setQrOpen(false)}
+        >
+          <div
+            className="bg-surface rounded-2xl p-6 max-w-xs w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary mb-2">
+                QR 코드
+              </div>
+              <h3 className="text-[17px] font-bold text-text mb-4">
+                이 코드를 스캔하세요
+              </h3>
+              {/* QR 이미지 — 외부 서비스로 생성 (네트워크 없으면 공백) */}
+              <div className="bg-white border border-border rounded-xl p-4 mb-4 flex items-center justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(publicUrl)}&margin=10&color=1B2A4E`}
+                  alt="QR 코드"
+                  width={240}
+                  height={240}
+                  className="w-full max-w-[240px] h-auto"
+                />
+              </div>
+              <p className="text-[12px] font-mono text-text-secondary break-all mb-4">
+                {publicUrl.replace(/^https?:\/\//, "")}
+              </p>
+              <button
+                onClick={() => setQrOpen(false)}
+                className="w-full py-3 bg-primary text-white rounded-xl font-semibold text-[14px] tracking-tight hover:bg-primary-dark active:scale-[0.98] transition-all"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
