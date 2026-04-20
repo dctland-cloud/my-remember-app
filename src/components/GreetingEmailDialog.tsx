@@ -117,9 +117,9 @@ export default function GreetingEmailDialog({
       fromTitle: myTitle,
       fromEmail: myEmail,
       fromPhone: myPhone,
-      digitalCardUrl: mySlug
-        ? `${window.location.origin}/p/${mySlug}`
-        : `${window.location.origin}/mycard`,
+      // 공개 슬러그가 있을 때만 링크 포함 — 슬러그 없으면 /mycard(로그인 필요 페이지)로
+      // 상대방이 끌려가지 않도록 본문에서 디지털 명함 링크를 생략한다.
+      digitalCardUrl: mySlug ? `${window.location.origin}/p/${mySlug}` : "",
     };
 
     // Gmail API 미설정 시: 기존 Gmail 작성창 폴백

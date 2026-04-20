@@ -522,9 +522,11 @@ export default function ScanPage() {
       fromTitle: profile?.title || "",
       fromEmail: myEmail,
       fromPhone: profile?.phone || "",
+      // 공개 슬러그가 있을 때만 링크 포함 — 슬러그 없으면 /mycard(로그인 필요 페이지)로
+      // 상대방이 끌려가지 않도록 본문에서 디지털 명함 링크를 생략한다.
       digitalCardUrl: profile?.slug
         ? `${window.location.origin}/p/${profile.slug}`
-        : `${window.location.origin}/mycard`,
+        : "",
     };
 
     try {
