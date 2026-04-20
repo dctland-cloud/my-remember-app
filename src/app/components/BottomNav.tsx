@@ -64,6 +64,10 @@ const navItems: NavItem[] = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  // 공개 명함 페이지(/p/...)에서는 하단 네비 숨김 — 상대방이 이 앱을 쓰는
+  // 게 아니라 단지 명함을 보는 상황이라 앱 메뉴는 혼란만 준다.
+  if (pathname?.startsWith("/p/")) return null;
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/60"
