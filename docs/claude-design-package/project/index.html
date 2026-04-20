@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>나만의 리멤버 — 홈 화면 리디자인</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Pretendard", sans-serif;
+    background: #FAFAF7;
+    color: #1C1C1E;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="variants.jsx"></script>
+<script type="text/babel">
+// ─────────────────────────────────────────────────────────
+// 디자인 문서 — 상단 시스템 요약 + 3가지 변형 나란히
+// ─────────────────────────────────────────────────────────
+
+function Swatch({ name, hex, note }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 120 }}>
+      <div style={{
+        width: '100%', height: 72, borderRadius: 12,
+        background: hex, border: '0.5px solid rgba(0,0,0,0.08)',
+      }} />
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: -0.1 }}>{name}</div>
+        <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.6)', marginTop: 2 }}>{hex}</div>
+        {note && <div style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', marginTop: 4, lineHeight: 1.4 }}>{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+function TypeSample({ size, weight, label, letter = 0, sample = '나만의 리멤버' }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, padding: '10px 0', borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+      <div className="mono" style={{ width: 120, fontSize: 11, color: 'rgba(60,60,67,0.6)', flexShrink: 0 }}>{label}</div>
+      <div style={{ fontSize: size, fontWeight: weight, letterSpacing: letter, lineHeight: 1.15, color: '#1C1C1E' }}>
+        {sample}
+      </div>
+    </div>
+  );
+}
+
+function SectionLabel({ n, title, sub }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 22 }}>
+      <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.5)', letterSpacing: 0.3 }}>0{n}</div>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: -0.3 }}>{title}</div>
+        {sub && <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.65)', marginTop: 2, maxWidth: 640, lineHeight: 1.45 }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function VariantCaption({ label, title, notes }) {
+  return (
+    <div style={{ marginTop: 24, maxWidth: 390 }}>
+      <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        Variation {label}
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: -0.3, marginTop: 4 }}>{title}</div>
+      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {notes.map((n, i) => (
+          <li key={i} style={{ fontSize: 13, color: 'rgba(60,60,67,0.75)', lineHeight: 1.5, paddingLeft: 14, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'rgba(60,60,67,0.4)' }}>—</span>
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '56px 56px 120px', maxWidth: 1600, margin: '0 auto' }}>
+      {/* ─── 헤더 ─── */}
+      <div style={{ marginBottom: 48 }}>
+        <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          나만의 리멤버 · 홈 화면 리디자인
+        </div>
+        <h1 style={{
+          fontSize: 44, fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.1,
+          margin: '8px 0 14px', maxWidth: 860,
+        }}>
+          Apple 스타일의 미니멀한 명함첩.<br/>
+          <span style={{ color: 'rgba(60,60,67,0.55)' }}>세 가지 방향을 두고 고르기.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(60,60,67,0.7)', maxWidth: 720, lineHeight: 1.55 }}>
+          프로페셔널하고 절제된 톤. 리스트는 리스트대로 두고, 브랜드 정체성은 타이포·여백·재질감으로 풀었습니다.
+          3개 변형은 공통 시스템(SF, 시스템 블루, 52pt 행) 위에서 <em>배경/카드/밀도</em>만 달라집니다.
+        </p>
+      </div>
+
+      {/* ─── 01. 컬러 ─── */}
+      <SectionLabel n={1} title="색상" sub="iOS 시스템 컬러를 기반. 액센트는 SF Blue 단 하나 — 새 CTA, 링크, 활성 탭에만 사용. 나머지는 중성톤." />
+      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 56 }}>
+        <Swatch name="Accent" hex="#007AFF" note="SF Blue · CTA/링크 전용" />
+        <Swatch name="Text" hex="#1C1C1E" note="본문 · 최대 대비" />
+        <Swatch name="Label 2" hex="#3C3C43" note="보조 텍스트 (α 60%)" />
+        <Swatch name="Surface" hex="#FFFFFF" note="카드/리스트 배경" />
+        <Swatch name="Cool BG" hex="#F2F2F7" note="Variant A 배경" />
+        <Swatch name="Warm BG" hex="#F5F3EE" note="Variant B 배경" />
+        <Swatch name="Dark BG" hex="#000000" note="Variant C 배경" />
+        <Swatch name="Dark Surface" hex="#1C1C1E" note="다크 카드" />
+      </div>
+
+      {/* ─── 02. 타이포 ─── */}
+      <SectionLabel n={2} title="타이포그래피" sub="SF Pro (Apple 시스템) + Pretendard (국문 대체). 크기 단계는 iOS Human Interface Guidelines 그대로." />
+      <div style={{ marginBottom: 56 }}>
+        <TypeSample size={34} weight={700} letter={0.37} label="Large Title · 34/700" sample="명함" />
+        <TypeSample size={22} weight={700} letter={0.35} label="Title 2 · 22/700" sample="만난 사람들" />
+        <TypeSample size={17} weight={600} letter={-0.43} label="Headline · 17/600" sample="김민준" />
+        <TypeSample size={17} weight={400} letter={-0.43} label="Body · 17/400" sample="토스 · Product Designer" />
+        <TypeSample size={14} weight={400} letter={-0.23} label="Footnote · 14/400" sample="CES 2026에서 만남" />
+        <TypeSample size={13} weight={600} letter={-0.08} label="Caption · 13/600" sample="최근 저장" />
+      </div>
+
+      {/* ─── 03. 변형 ─── */}
+      <SectionLabel n={3} title="세 가지 방향" sub="공통은 iOS 질감·탭바·검색바. 배경 톤·카드 밀도·스택 유무만 다름." />
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40,
+        alignItems: 'start',
+      }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <VariantA />
+          </div>
+          <VariantCaption
+            label="A"
+            title="연락처 앱 스타일"
+            notes={[
+              '초성별 섹션 그룹화 + 우측 인덱스',
+              '순백 서피스 · 얇은 0.5px 디바이더',
+              '정보 밀도 높음. 가장 "시스템 앱"스러움',
+              '빠른 탐색에 최적. 다소 무미건조할 수 있음',
+            ]}
+          />
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <VariantB />
+          </div>
+          <VariantCaption
+            label="B"
+            title="저널 · 노트 스타일"
+            notes={[
+              '따뜻한 오프화이트 배경 + 떠있는 카드',
+              '"만난 장소" 필터를 상단에 pill로 전면 배치',
+              '장소 태그를 개별 카드에 표시 — 킬러 기능 강조',
+              '일상/기록 앱 톤. 가장 "개인적"',
+            ]}
+          />
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <VariantC />
+          </div>
+          <VariantCaption
+            label="C"
+            title="Wallet · 다크 스택"
+            notes={[
+              '다크 모드 기본 · 검정 배경',
+              '최근 명함 3장을 Wallet 패스처럼 스택',
+              '나머지는 컴팩트 리스트로 밀도 유지',
+              '가장 브랜드 강함. 새로 저장한 명함이 주인공',
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* ─── 04. 논의 포인트 ─── */}
+      <div style={{ marginTop: 96 }}>
+        <SectionLabel n={4} title="같이 정할 것" sub="어떤 방향이 마음에 드시는지, 혹은 A의 리스트 + B의 필터 같은 혼합도 가능합니다." />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1200 }}>
+          {[
+            { q: '배경 톤', a: '쿨 그레이(A) / 따뜻한 오프화이트(B) / 블랙(C)' },
+            { q: '"만난 장소"의 위상', a: '숨김(A) / 필터로 전면(B) / 리스트에만(C)' },
+            { q: '최근 명함 강조', a: '없음(A,B) / 상단 스택(C) — 저장 직후 만족감' },
+            { q: '그룹화 방식', a: '초성 섹션(A) / 평면 리스트(B,C) / 최근+전체(C)' },
+            { q: '아바타 스타일', a: '연한 틴티드(A,B) / 그라디언트(C)' },
+            { q: '현재 앱 대비', a: '지금 파란색·그라디언트·감지 이모지 톤은 모두 제거됨' },
+          ].map((x, i) => (
+            <div key={i} style={{
+              padding: '18px 20px', background: '#fff', borderRadius: 14,
+              border: '0.5px solid rgba(0,0,0,0.08)',
+            }}>
+              <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.3, textTransform: 'uppercase' }}>
+                {String(i+1).padStart(2, '0')}
+              </div>
+              <div style={{ fontSize: 15, fontWeight: 600, marginTop: 6, letterSpacing: -0.2 }}>{x.q}</div>
+              <div style={{ fontSize: 13, color: 'rgba(60,60,67,0.7)', marginTop: 4, lineHeight: 1.5 }}>{x.a}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 푸터 */}
+      <div style={{ marginTop: 80, paddingTop: 24, borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.3 }}>
+          스캔 플로우 · 디지털 명함 · 상세 페이지는 방향 확정 후 이어서 디자인합니다.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

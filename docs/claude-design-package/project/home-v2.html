@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>나만의 리멤버 — B안 v2 (키워드 필터)</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  html, body { margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Pretendard", sans-serif;
+    background: #FAFAF7; color: #1C1C1E; -webkit-font-smoothing: antialiased; }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="variants-v2.jsx"></script>
+<script type="text/babel">
+function SectionLabel({ n, title, sub }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 22 }}>
+      <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.5)', letterSpacing: 0.3 }}>0{n}</div>
+      <div>
+        <div style={{ fontSize: 22, fontWeight: 600, letterSpacing: -0.3 }}>{title}</div>
+        {sub && <div style={{ fontSize: 14, color: 'rgba(60,60,67,0.65)', marginTop: 2, maxWidth: 720, lineHeight: 1.45 }}>{sub}</div>}
+      </div>
+    </div>
+  );
+}
+
+function StateCaption({ label, title, notes }) {
+  return (
+    <div style={{ marginTop: 22, maxWidth: 390 }}>
+      <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.4, textTransform: 'uppercase' }}>
+        State · {label}
+      </div>
+      <div style={{ fontSize: 19, fontWeight: 600, letterSpacing: -0.3, marginTop: 4 }}>{title}</div>
+      <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {notes.map((n, i) => (
+          <li key={i} style={{ fontSize: 13, color: 'rgba(60,60,67,0.75)', lineHeight: 1.5, paddingLeft: 14, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 0, top: 0, color: 'rgba(60,60,67,0.4)' }}>—</span>
+            {n}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function KeyChange({ title, before, after }) {
+  return (
+    <div style={{
+      padding: '18px 20px', background: '#fff', borderRadius: 14,
+      border: '0.5px solid rgba(0,0,0,0.08)',
+    }}>
+      <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: -0.2, marginBottom: 10 }}>{title}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+          <span className="mono" style={{ fontSize: 10, color: 'rgba(60,60,67,0.5)', width: 40, flexShrink: 0 }}>BEFORE</span>
+          <span style={{ fontSize: 13, color: 'rgba(60,60,67,0.7)', textDecoration: 'line-through' }}>{before}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+          <span className="mono" style={{ fontSize: 10, color: '#1B2A4E', fontWeight: 600, width: 40, flexShrink: 0 }}>AFTER</span>
+          <span style={{ fontSize: 13, color: '#1C1C1E' }}>{after}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <div style={{ padding: '56px 56px 120px', maxWidth: 1600, margin: '0 auto' }}>
+      {/* 헤더 */}
+      <div style={{ marginBottom: 48 }}>
+        <div className="mono" style={{ fontSize: 12, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+          나만의 리멤버 · 홈 화면 v2
+        </div>
+        <h1 style={{
+          fontSize: 44, fontWeight: 700, letterSpacing: -0.8, lineHeight: 1.1,
+          margin: '8px 0 14px', maxWidth: 920,
+        }}>
+          B안 확정 · 기억 키워드로 그룹화.<br/>
+          <span style={{ color: '#1B2A4E' }}>딥 네이비 악센트, 사용자 정의 태그, 빈 상태 포함.</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'rgba(60,60,67,0.7)', maxWidth: 780, lineHeight: 1.55 }}>
+          "만난 장소" 한 가지만이 아니라, 사용자가 자유롭게 붙이는 <strong>기억 키워드</strong>로 필터·그룹화합니다.
+          "CES 2026", "박사", "회사 동료", "디자이너"처럼 내가 기억하고 싶은 방식으로 — 하나의 명함에 여러 개.
+        </p>
+      </div>
+
+      {/* 변경점 요약 */}
+      <SectionLabel n={1} title="무엇이 달라졌나" />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 64, maxWidth: 1200 }}>
+        <KeyChange
+          title="악센트 컬러"
+          before="#2563eb 시스템 블루"
+          after="#1B2A4E 딥 네이비 — 더 차분하고 프리미엄"
+        />
+        <KeyChange
+          title="필터 기준"
+          before="metAt (만난 장소) 단일 필드"
+          after="tags[] 복수 — 장소·역할·분야 자유롭게"
+        />
+        <KeyChange
+          title="그룹화"
+          before="없음 (평면 리스트)"
+          after="선택한 키워드가 그룹이 됨 (사용자가 결정)"
+        />
+        <KeyChange
+          title="태그 예시"
+          before="'CES 2026'"
+          after="'CES 2026' + '박사' + 'AI' (한 명함에 여러 개)"
+        />
+        <KeyChange
+          title="빈 상태"
+          before="아이콘 + 한 줄 안내"
+          after="스택 일러스트 + 온보딩 + 키워드 사용법 힌트"
+        />
+        <KeyChange
+          title="CTA"
+          before="파란 꽉찬 사각형 버튼"
+          after="네이비 + 부드러운 그림자, 촬영 아이콘 동반"
+        />
+      </div>
+
+      {/* 3가지 상태 */}
+      <SectionLabel n={2} title="세 가지 상태" sub="같은 화면의 세 순간. 상단 필터 바가 핵심 — 전체 ↔ 키워드 선택 ↔ 아직 비어있음." />
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 40, alignItems: 'start',
+      }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <V2_All />
+          </div>
+          <StateCaption
+            label="A"
+            title="전체 보기 (기본)"
+            notes={[
+              '"전체" pill이 네이비로 활성',
+              '키워드 바: 빈도순 정렬 + 각 태그 옆 숫자',
+              '우측에는 각 명함의 대표 태그 2개가 배지로',
+              '스크롤 가능, 끝에는 "+ 키워드" 추가 입력',
+            ]}
+          />
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <V2_Filtered />
+          </div>
+          <StateCaption
+            label="B"
+            title="키워드 선택 (그룹 뷰)"
+            notes={[
+              '"CES 2026" 탭 → 해당 키워드만 남음',
+              '그룹 헤더에 키워드 + 명수 표시',
+              '카드의 해당 태그는 숨기고 다른 태그만 노출',
+              '다시 "전체" 탭하면 복귀',
+            ]}
+          />
+        </div>
+
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <V2_Empty />
+          </div>
+          <StateCaption
+            label="C"
+            title="빈 상태 (신규 사용자)"
+            notes={[
+              '명함 스택 일러스트 — 기울어진 세 장',
+              '"첫 명함을 추가해보세요" + 키워드 사용 팁',
+              '네이비 CTA + 갤러리 보조 액션',
+              '필터 바는 숨김 (태그가 없으니)',
+            ]}
+          />
+        </div>
+      </div>
+
+      {/* 태그 시스템 설명 */}
+      <div style={{ marginTop: 96 }}>
+        <SectionLabel n={3} title="기억 키워드 시스템" sub="한 명함당 자유 개수. 자동 생성 + 직접 추가 모두 가능하게 설계." />
+        <div style={{
+          background: '#fff', borderRadius: 16, padding: 28, maxWidth: 1200,
+          border: '0.5px solid rgba(0,0,0,0.08)',
+        }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 28 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4E', letterSpacing: -0.1, marginBottom: 8 }}>
+                자동 제안
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(60,60,67,0.7)', lineHeight: 1.5 }}>
+                스캔 시 날짜·장소 기반 키워드를 제안 — "CES 2026", "오늘 미팅"
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4E', letterSpacing: -0.1, marginBottom: 8 }}>
+                직접 입력
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(60,60,67,0.7)', lineHeight: 1.5 }}>
+                저장 시 또는 상세에서 추가 — "박사", "회사 동료", "잠재 고객"
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1B2A4E', letterSpacing: -0.1, marginBottom: 8 }}>
+                재사용
+              </div>
+              <div style={{ fontSize: 13, color: 'rgba(60,60,67,0.7)', lineHeight: 1.5 }}>
+                이미 쓴 키워드는 자동완성. 태그가 많아질수록 그룹화가 풍부
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            marginTop: 24, paddingTop: 20, borderTop: '0.5px solid rgba(0,0,0,0.06)',
+            display: 'flex', flexWrap: 'wrap', gap: 8,
+          }}>
+            <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.3, marginRight: 6, alignSelf: 'center' }}>
+              예시 태그:
+            </div>
+            {['CES 2026', '박사', '회사 동료', '디자이너', 'AI', '개발자 컨퍼런스', '잠재 고객', '2026 상반기', '투자자', '멘토'].map(t => (
+              <div key={t} style={{
+                padding: '4px 10px', background: 'rgba(27,42,78,0.07)',
+                color: '#1B2A4E', borderRadius: 9999,
+                fontSize: 12, fontWeight: 500, letterSpacing: -0.1,
+              }}>{t}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 다음 단계 */}
+      <div style={{ marginTop: 80, paddingTop: 24, borderTop: '0.5px solid rgba(0,0,0,0.08)' }}>
+        <div className="mono" style={{ fontSize: 11, color: 'rgba(60,60,67,0.55)', letterSpacing: 0.3 }}>
+          다음 — 어떤 화면 작업할지 골라주세요: 스캔 플로우 / 명함 상세 / 내 디지털 명함 / 설정
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
