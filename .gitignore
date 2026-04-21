@@ -54,10 +54,10 @@ serviceAccountKey.json
 .vscode/
 .idea/
 
-# Claude Code
+# Claude Code (local settings - 개인 하네스 설정이라 공유 불필요)
 .claude/
 
-# Playwright MCP logs
+# Playwright MCP 캐시·로그
 .playwright-mcp/
 
 # 로컬 테스트용 스크린샷
@@ -65,12 +65,6 @@ serviceAccountKey.json
 
 # Vercel CLI (local)
 .vercel
-
-# Claude Code (local settings - 개인 하네스 설정이라 공유 불필요)
-.claude/
-
-# Playwright MCP 캐시
-.playwright-mcp/
 
 # 배포 아카이브 (용량 큼)
 deploy-*.zip
