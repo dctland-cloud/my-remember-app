@@ -60,6 +60,9 @@ serviceAccountKey.json
 # Playwright MCP 캐시·로그
 .playwright-mcp/
 
+# Playwright CLI 스킬 캐시
+.playwright-cli/
+
 # 로컬 테스트용 스크린샷
 /step*.png
 
