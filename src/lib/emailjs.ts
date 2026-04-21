@@ -19,6 +19,16 @@ export interface GreetingEmailParams {
 }
 
 /** 인사 이메일 본문 생성 */
+export function buildGreetingBody(params: GreetingEmailParams): string {
+  return buildBody(params);
+}
+
+/** 인사 이메일 제목 생성 */
+export function buildGreetingSubject(params: GreetingEmailParams): string {
+  return buildSubject(params);
+}
+
+/** 인사 이메일 본문 생성 (내부) */
 function buildBody(params: GreetingEmailParams): string {
   const lines: string[] = [
     `${params.toName}님, 안녕하세요.`,
