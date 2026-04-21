@@ -55,3 +55,15 @@ serviceAccountKey.json
 .idea/
 
 .vercel
+
+# Claude Code (local settings - 개인 하네스 설정이라 공유 불필요)
+.claude/
+
+# Playwright MCP 캐시
+.playwright-mcp/
+
+# 배포 아카이브 (용량 큼)
+deploy-*.zip
+
+# 리멤버앱과 무관한 파일들 (실수로 폴더에 떨어진 것들 제외)
+docs/admsci-*.pdf
